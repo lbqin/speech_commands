@@ -131,6 +131,8 @@ def main(_):
       FLAGS.model_architecture,
       is_training=True)
 
+  print(logits, dropout_prob)
+
   # Define loss and optimizer
   ground_truth_input = tf.placeholder(
       tf.int64, [None], name='groundtruth_input')

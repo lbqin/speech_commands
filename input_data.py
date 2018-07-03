@@ -43,6 +43,7 @@ SILENCE_INDEX = 0
 UNKNOWN_WORD_LABEL = '_unknown_'
 UNKNOWN_WORD_INDEX = 1
 BACKGROUND_NOISE_DIR_NAME = '_background_noise_'
+#BACKGROUND_NOISE_DIR_NAME = ''
 RANDOM_SEED = 59185
 
 
@@ -366,13 +367,16 @@ class AudioProcessor(object):
                                  self.time_shift_offset_placeholder_,
                                  [desired_samples, -1])
     # Mix in background noise.
-    self.background_data_placeholder_ = tf.placeholder(tf.float32,
-                                                       [desired_samples, 1])
-    self.background_volume_placeholder_ = tf.placeholder(tf.float32, [])
-    background_mul = tf.multiply(self.background_data_placeholder_,
-                                 self.background_volume_placeholder_)
-    background_add = tf.add(background_mul, sliced_foreground)
-    background_clamp = tf.clip_by_value(background_add, -1.0, 1.0)
+    if self.background_data is None:
+      self.background_data_placeholder_ = tf.placeholder(tf.float32,
+                                                         [desired_samples, 1])
+      self.background_volume_placeholder_ = tf.placeholder(tf.float32, [])
+      background_mul = tf.multiply(self.background_data_placeholder_,
+                                   self.background_volume_placeholder_)
+      background_add = tf.add(background_mul, sliced_foreground)
+      background_clamp = tf.clip_by_value(background_add, -1.0, 1.0)
+    else:
+      background_clamp = sliced_foreground
     # Run the spectrogram and MFCC ops to get a 2D 'fingerprint' of the audio.
     spectrogram = contrib_audio.audio_spectrogram(
         background_clamp,
@@ -457,7 +461,25 @@ class AudioProcessor(object):
           self.time_shift_offset_placeholder_: time_shift_offset,
       }
       # Choose a section of background noise to mix in.
-      if use_background or sample['label'] == SILENCE_LABEL:
+      # if use_background or sample['label'] == SILENCE_LABEL:
+      #   background_index = np.random.randint(len(self.background_data))
+      #   background_samples = self.background_data[background_index]
+      #   background_offset = np.random.randint(
+      #       0, len(background_samples) - model_settings['desired_samples'])
+      #   background_clipped = background_samples[background_offset:(
+      #       background_offset + desired_samples)]
+      #   background_reshaped = background_clipped.reshape([desired_samples, 1])
+      #   if sample['label'] == SILENCE_LABEL:
+      #     background_volume = np.random.uniform(0, 1)
+      #   elif np.random.uniform(0, 1) < background_frequency:
+      #     background_volume = np.random.uniform(0, background_volume_range)
+      #   else:
+      #     background_volume = 0
+      # else:
+      #   background_reshaped = np.zeros([desired_samples, 1])
+      #   background_volume = 0
+
+      if len(use_background) != 0:
         background_index = np.random.randint(len(self.background_data))
         background_samples = self.background_data[background_index]
         background_offset = np.random.randint(
@@ -465,17 +487,18 @@ class AudioProcessor(object):
         background_clipped = background_samples[background_offset:(
             background_offset + desired_samples)]
         background_reshaped = background_clipped.reshape([desired_samples, 1])
-        if sample['label'] == SILENCE_LABEL:
-          background_volume = np.random.uniform(0, 1)
-        elif np.random.uniform(0, 1) < background_frequency:
-          background_volume = np.random.uniform(0, background_volume_range)
-        else:
-          background_volume = 0
       else:
         background_reshaped = np.zeros([desired_samples, 1])
+
+      if sample['label'] == SILENCE_LABEL:
+        background_volume = np.random.uniform(0, 1)
+        # elif np.random.uniform(0, 1) < background_frequency:
+        #   background_volume = np.random.uniform(0, background_volume_range)
+      else:
         background_volume = 0
-      input_dict[self.background_data_placeholder_] = background_reshaped
-      input_dict[self.background_volume_placeholder_] = background_volume
+
+      #input_dict[self.background_data_placeholder_] = background_reshaped
+      #input_dict[self.background_volume_placeholder_] = background_volume
       # If we want silence, mute out the main sample but leave the background.
       if sample['label'] == SILENCE_LABEL:
         input_dict[self.foreground_volume_placeholder_] = 0
