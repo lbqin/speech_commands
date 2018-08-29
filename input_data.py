@@ -239,7 +239,7 @@ class AudioProcessor(object):
     unknown_index = {'validation': [], 'testing': [], 'training': []}
     all_words = {}
     # Look through all the subfolders to find audio samples
-    search_path = os.path.join(self.data_dir, '*', '*.wav')
+    search_path = os.path.join(self.data_dir, '*', '*.pcm')
     for wav_path in gfile.Glob(search_path):
       _, word = os.path.split(os.path.dirname(wav_path))
       word = word.lower()
@@ -317,7 +317,7 @@ class AudioProcessor(object):
       wav_loader = io_ops.read_file(wav_filename_placeholder)
       wav_decoder = contrib_audio.decode_wav(wav_loader, desired_channels=1)
       search_path = os.path.join(self.data_dir, BACKGROUND_NOISE_DIR_NAME,
-                                 '*.wav')
+                                 '*.pcm')
       for wav_path in gfile.Glob(search_path):
         wav_data = sess.run(
             wav_decoder,

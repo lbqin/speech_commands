@@ -20,9 +20,10 @@ if [ ! -d "./data/train" ]; then
 fi
 find "./data/train" -name '*.wav' > train_list_noVAD_wav.txt
 
-python train.py --data_url= --data_dir="./data/train" --wanted_words="changsha,hebei,kejia,minnan,nanchang,shanghai,hefei,sichuan,shan3xi" --train_dir="./models"
+python train.py --data_url= --data_dir="./data/train" --wanted_words="minnan,nanchang,kejia,changsha,shanghai,hebei,hefei,sichuan,shan3xi,ningxia" --train_dir="./models"
 
 #python train.py --data_url= --data_dir="/home/research/data/dataset/speech_commands_v0.02"  --train_dir="/home/research/data/#speech_commands_train" --wanted_words="yes,no,up,down,left,right,on,off,stop,go,zero,one,two,three,four,five,six,seven,eight,\
 #nine,bed,bird,cat,dog,happy,house,marvin,sheila,tree,wow,backward,follow,forward,learn,visual"
 
-python freeze.py --start_checkpoint="./models/conv.ckpt-18000" --output_file="./models/my_frozen_graph.pb" --wanted_words="changsha,hebei,kejia,minnan,nanchang,shanghai,hefei,sichuan,shan3xi"
+python freeze.py --start_checkpoint="./models/conv.ckpt-18000" --output_file="./models/my_frozen_graph.pb" --wanted_words="minnan,nanchang,kejia,changsha,shanghai,hebei,hefei,sichuan,shan3xi,ningxia"
+

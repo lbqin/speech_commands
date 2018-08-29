@@ -1,11 +1,14 @@
 #!/bin/bash
 
+chmod a+x ./bin/pcm2wav
+#cd /fangyaninference/
+
 mkdir result
 #rm -rf ./data
 
 if [ ! -d "./data/valid" ]; then
 #    rm dev_list_noVAD.txt
-    find "/test" -name '*.pcm'  > dev_list_noVAD.txt
+    find "/dataset" -name '*dev*.pcm'  > dev_list_noVAD.txt
 #    mkdir ./data
     mkdir ./data/valid
 
